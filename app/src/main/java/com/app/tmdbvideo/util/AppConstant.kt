@@ -13,6 +13,13 @@ object AppConstant  {
     const val TV_SERIES="tv_series"
     const val MOVIES="movies"
 
+    const val HOME_HEADER_POPULAR_TV="Popular Tv"
+    const val HOME_HEADER_POPULAR_MOVIE="Popular Movies"
+    const val HOME_HEADER_TOP_RATED_TV="Top Rated Tv"
+    const val HOME_HEADER_TOP_RATED_MOVIE="Top Rated Movies"
+
+    const val TAG_VIEW_ALL="view_all"
+
     fun networkCheck(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = cm.activeNetworkInfo

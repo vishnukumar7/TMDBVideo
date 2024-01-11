@@ -73,7 +73,7 @@ class TvRepository(tmdb: TMDBDatabase) {
 
     fun findMoviePage(page: Int,type: String=""){
         coroutineScope.launch {
-            searchOneMovieResult.postValue(asyncFindMovie(page = page,type).await())
+            searchOneMovieResult.postValue(asyncFindMovie(page = page,type= type).await())
         }
     }
 

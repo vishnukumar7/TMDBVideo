@@ -1,5 +1,6 @@
 package com.app.tmdbvideo.network
 
+import com.app.tmdbvideo.model.DetailImageResponse
 import com.app.tmdbvideo.model.MovieDetailResponse
 import com.app.tmdbvideo.model.MovieResponse
 import com.app.tmdbvideo.model.TrendingTvResponse
@@ -23,8 +24,11 @@ interface ApiInterface {
     @GET("3/movie/top_rated")
     fun getTopRatedMovie(@Query("language") language : String="en-US",@Query("page")page : String) : Call<MovieResponse>
 
-    /*@GET("3/tv/{series_id}/images")
-    fun getSeriesImage(@Path("series_id") imageId : String*/
+    @GET("3/tv/{series_d}/images")
+    fun getSeriesImage(@Path("series_d") seriesId : String) : Call<DetailImageResponse>
+
+    @GET("3/tv/{movie_id}/images")
+    fun getMoviesImage(@Path("movie_id") movieId : String) : Call<DetailImageResponse>
 
     @GET("3/tv/{series_id}")
     fun getTvDetail(@Path("series_id") seriesId : String) : Call<TvDetailResponse>

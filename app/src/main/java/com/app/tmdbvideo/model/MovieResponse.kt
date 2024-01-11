@@ -14,7 +14,7 @@ data class MovieResponse(
 
 	@ColumnInfo
 	@field:SerializedName("page")
-	val page: Int,
+	var page: Int=-1,
 
 	@ColumnInfo(name = "total_pages")
 	@field:SerializedName("total_pages")

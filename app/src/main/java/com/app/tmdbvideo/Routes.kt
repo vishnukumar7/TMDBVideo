@@ -5,5 +5,6 @@ sealed class Routes(val routes : String){
     object DetailTvViewScreen : Routes("DetailTv")
     object HomeViewScreen : Routes("Home")
     object SearchFilterOption : Routes("search")
-    object ViewAllScreen : Routes("ViewAll")
+    object ViewAllTVScreen : Routes("ViewAllTv")
+    object ViewAllMovieScreen : Routes("ViewAllMovie")
 }

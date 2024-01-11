@@ -9,17 +9,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import com.app.tmdbvideo.Extension.addValue
 import com.app.tmdbvideo.model.HomePageModel
 import com.app.tmdbvideo.model.MovieResponse
+import com.app.tmdbvideo.model.MovieResultsItem
 import com.app.tmdbvideo.model.TrendingTvResponse
 import com.app.tmdbvideo.model.TvResultsItem
 import com.app.tmdbvideo.network.ApiInterface
 import com.app.tmdbvideo.network.RetrofitClient
 import com.app.tmdbvideo.network.TMDBDatabase
+import com.app.tmdbvideo.page.detail.DetailViewModel
 import com.app.tmdbvideo.responsitory.TvRepository
 import com.app.tmdbvideo.util.AppConstant
 import com.google.gson.Gson
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -28,15 +30,23 @@ import retrofit2.Response
 class MainViewModel(private val application: Application) : ViewModel() {
 
     private val tvRepository: TvRepository
-
+val TAG="MainViewModel"
     init {
         val tmdb = TMDBDatabase.getInstance(application)
         tvRepository = TvRepository(tmdb)
-
     }
+
+
 
     private val _trendingTvList = MutableLiveData<List<TvResultsItem>>()
     val trendingTvList: LiveData<List<TvResultsItem>> = _trendingTvList
+
+    private val tvSeriesList = mutableStateListOf<TvResultsItem>()
+
+    private val _searchMovieList = MutableLiveData<List<MovieResultsItem>>()
+    val searchMovieList: LiveData<List<MovieResultsItem>> = _searchMovieList
+
+    private val movieLit = mutableStateListOf<MovieResultsItem>()
 
     private val _homeList = MutableLiveData<List<HomePageModel>>()
     val homeList: LiveData<List<HomePageModel>> = _homeList
@@ -51,6 +61,7 @@ class MainViewModel(private val application: Application) : ViewModel() {
 
 
     var currentPage = 1
+    var apiPage =1
 
     fun refreshData() {
         _refreshState.value = true
@@ -62,32 +73,37 @@ class MainViewModel(private val application: Application) : ViewModel() {
             getPopularTvList()
         }else{
             homePageModelList.clear()
-            tvRepository.findTvSeriesPage(1)
-            tvRepository.findMoviePage(1)
+
             viewModelScope.launch {
                 tvRepository.searchOneTvResult.asFlow().collect{
                     val topRatedTvSeriesPage = it.filter { it.type==AppConstant.TOP_RATED_TV }
                     val popularTvSeriesPage = it.filter { it.type==AppConstant.POPULAR_TV }
-                    homePageModelList.add(0,HomePageModel("Popular Tv",popularTvSeriesPage))
-                    homePageModelList.add(1,HomePageModel("Top Rated Tv",topRatedTvSeriesPage))
+                    homePageModelList.addValue(0,HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV,popularTvSeriesPage[0].results))
+                    homePageModelList.addValue(1,HomePageModel(AppConstant.TOP_RATED_TV,topRatedTvSeriesPage[0].results))
                     _homeList.postValue(homePageModelList)
+                 //   tvRepository.findMoviePage(1)
                 }
 
-                /*tvRepository.searchOneMovieResult.asFlow().collect{
+                tvRepository.searchOneMovieResult.asFlow().collect{
                     val topRatedMoviePage = it.filter { it.type==AppConstant.TOP_RATED_MOVIE } //"Top Rated Movies"
                     val popularMoviePage = it.filter { it.type==AppConstant.POPULAR_MOVIE }// "Popular Movies"
-                    homePageModelList.add(3, HomePageModel("Top Rated Movies",topRatedMoviePage))
-                    homePageModelList.add(2, HomePageModel("Popular Movies",popularMoviePage))
+                    Log.e(TAG, "getHomeData: topRatedMoviePage::::: ${Gson().toJson(topRatedMoviePage)}", )
+                    Log.e(TAG, "getHomeData: popularMoviePage :::::::::: ${Gson().toJson(popularMoviePage)}", )
+                    homePageModelList.addValue(0, HomePageModel(AppConstant.HOME_HEADER_TOP_RATED_MOVIE,topRatedMoviePage[0].results))
+                    homePageModelList.addValue(1, HomePageModel(AppConstant.HOME_HEADER_POPULAR_MOVIE,popularMoviePage[0].results))
                     _homeList.postValue(homePageModelList)
-                }*/
+                }
             }
+            tvRepository.findMoviePage(1)
+
         }
     }
 
-    fun getPopularTvList(page: Int = 1) {
-        homePageModelList.clear()
+    fun getPopularTvList(page: Int = 1,search: String = "") {
+        apiPage=page
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
+
             val call = apiService.getPopularTv(page = page.toString())
             call.enqueue(object : Callback<TrendingTvResponse> {
                 override fun onResponse(
@@ -98,12 +114,25 @@ class MainViewModel(private val application: Application) : ViewModel() {
                     if (response.isSuccessful && response.body() != null) {
                         tvRepository.deleteAll()
                         val responseData = response.body()!!
-                        _trendingTvList.value = responseData.results
-                        homePageModelList.add(HomePageModel("Popular Tv", responseData.results))
                         responseData.type = AppConstant.POPULAR_TV
-                        _homeList.value = homePageModelList
                         tvRepository.insertTv(responseData)
-                        getTopRatedTvList()
+                        if(search.isEmpty()){
+                            homePageModelList.clear()
+                            homePageModelList.add(HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV, responseData.results))
+                            _homeList.value = homePageModelList
+                            getTopRatedTvList()
+                        }else{
+                            currentPage=responseData.page
+                            if(page==1) {
+
+                                tvSeriesList.clear()
+                                tvSeriesList.addAll(responseData.results)
+                            }
+                            else{
+                                tvSeriesList.addAll(responseData.results)
+                            }
+                            _trendingTvList.value = tvSeriesList
+                        }
                         Log.e("TAG", "onResponse: ${Gson().toJson(response.body())}")
 
                     }
@@ -118,7 +147,8 @@ class MainViewModel(private val application: Application) : ViewModel() {
         }
     }
 
-    fun getTopRatedTvList(page: Int = 1) {
+    fun getTopRatedTvList(page: Int = 1,search: String="") {
+        apiPage=page
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
             val call = apiService.getTopRatedTv(page = page.toString())
@@ -130,16 +160,28 @@ class MainViewModel(private val application: Application) : ViewModel() {
                     _refreshState.value = false
                     if (response.isSuccessful && response.body() != null) {
                         val responseData = response.body()!!
-                        homePageModelList.add(
-                            HomePageModel(
-                                "Top Rated Tv",
-                                responseData.results
-                            )
-                        )
                         responseData.type = AppConstant.TOP_RATED_TV
                         tvRepository.insertTv(responseData)
-                        _homeList.value = homePageModelList
-                        getPopularMovieList()
+                        if(search.isEmpty()){
+                            homePageModelList.add(
+                                HomePageModel(
+                                    AppConstant.TOP_RATED_TV,
+                                    responseData.results
+                                )
+                            )
+                            _homeList.value = homePageModelList
+                            getPopularMovieList()
+                        }else{
+                            currentPage=responseData.page
+                            if(page==1) {
+                                tvSeriesList.clear()
+                                tvSeriesList.addAll(responseData.results)
+                            }
+                            else{
+                                tvSeriesList.addAll(responseData.results)
+                            }
+                            _trendingTvList.value=tvSeriesList
+                        }
                         Log.e("TAG", "onResponse: ${Gson().toJson(response.body())}")
 
                     }
@@ -155,7 +197,8 @@ class MainViewModel(private val application: Application) : ViewModel() {
         }
     }
 
-    fun getPopularMovieList(page: Int = 1) {
+    fun getPopularMovieList(page: Int = 1,search: String="") {
+        apiPage=page
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
             val call = apiService.getPopularMovie(page = page.toString())
@@ -167,16 +210,28 @@ class MainViewModel(private val application: Application) : ViewModel() {
                     _refreshState.value = false
                     if (response.isSuccessful && response.body() != null) {
                         val responseData = response.body()!!
-                        homePageModelList.add(
-                            HomePageModel(
-                                "Popular Movies",
-                                responseData.results
-                            )
-                        )
                         responseData.type = AppConstant.POPULAR_MOVIE
-                        _homeList.value = homePageModelList
                         tvRepository.insertMovie(responseData)
-                        getTopRatedMovieList()
+                       if(search.isEmpty()){
+                           homePageModelList.add(
+                               HomePageModel(
+                                   AppConstant.HOME_HEADER_POPULAR_MOVIE,
+                                   responseData.results
+                               )
+                           )
+                           _homeList.value = homePageModelList
+                           getTopRatedMovieList()
+                       }else{
+                           currentPage=responseData.page
+                           if(page==1) {
+                               movieLit.clear()
+                               movieLit.addAll(responseData.results)
+                           }
+                           else{
+                               movieLit.addAll(responseData.results)
+                           }
+                           _searchMovieList.value=movieLit
+                       }
                         Log.e("TAG", "onResponse: ${Gson().toJson(responseData)}")
 
                     }
@@ -192,7 +247,8 @@ class MainViewModel(private val application: Application) : ViewModel() {
         }
     }
 
-    fun getTopRatedMovieList(page: Int = 1) {
+    fun getTopRatedMovieList(page: Int = 1,search: String="") {
+        apiPage=page
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
             val call = apiService.getTopRatedMovie(page = page.toString())
@@ -204,15 +260,27 @@ class MainViewModel(private val application: Application) : ViewModel() {
                     _refreshState.value = false
                     if (response.isSuccessful && response.body() != null) {
                         val responseData = response.body()!!
-                        homePageModelList.add(
-                            HomePageModel(
-                                "Top Rated Movies",
-                                responseData.results
-                            )
-                        )
-                        _homeList.value = homePageModelList
                         responseData.type = AppConstant.TOP_RATED_MOVIE
                         tvRepository.insertMovie(responseData)
+                        if(search.isEmpty()){
+                            homePageModelList.add(
+                                HomePageModel(
+                                    AppConstant.HOME_HEADER_TOP_RATED_MOVIE,
+                                    responseData.results
+                                )
+                            )
+                            _homeList.value = homePageModelList
+                        }else{
+                            currentPage=responseData.page
+                            if(page==1) {
+                                movieLit.clear()
+                                movieLit.addAll(responseData.results)
+                            }
+                            else{
+                                movieLit.addAll(responseData.results)
+                            }
+                            _searchMovieList.value=movieLit
+                        }
                         Log.e("TAG", "onResponse: ${Gson().toJson(responseData)}")
 
                     }
@@ -222,17 +290,17 @@ class MainViewModel(private val application: Application) : ViewModel() {
                     _refreshState.value = false
                     _errorMessage.value = t.message.toString()
                 }
-
             })
         }
-
     }
 }
 
-class MainViewModelFactory(private var application: Application) : ViewModelProvider.Factory {
+class ViewModelClassFactory(private var application: Application) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
             return MainViewModel(application) as T
+        }else if(modelClass.isAssignableFrom(DetailViewModel::class.java)){
+            return DetailViewModel(application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel Class")
     }
