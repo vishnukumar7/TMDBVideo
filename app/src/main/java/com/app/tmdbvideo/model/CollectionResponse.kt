@@ -1,40 +1,29 @@
 package com.app.tmdbvideo.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "movie_table")
-data class MovieResponse(
+data class CollectionResponse(
 
-	@PrimaryKey(autoGenerate = true)
-	var id: Int=0,
+	@field:SerializedName("backdrop_path")
+	val backdropPath: String,
 
-	@ColumnInfo
-	@field:SerializedName("page")
-	var page: Int=-1,
+	@field:SerializedName("overview")
+	val overview: String,
 
-	@ColumnInfo(name = "total_pages")
-	@field:SerializedName("total_pages")
-	var totalPages: Int,
+	@field:SerializedName("name")
+	val name: String,
 
+	@field:SerializedName("parts")
+	val parts: List<PartsItem>,
 
-	@ColumnInfo
-	@TypeConverters(DataConverter::class)
-	@field:SerializedName("results")
-	var results: List<MovieResultsItem>,
+	@field:SerializedName("id")
+	val id: Int,
 
-	@ColumnInfo(name = "total_results")
-	@field:SerializedName("total_results")
-	var totalResults: Int,
-
-	@ColumnInfo
-	var type : String =""
+	@field:SerializedName("poster_path")
+	val posterPath: String
 )
 
-data class MovieResultsItem(
+data class PartsItem(
 
 	@field:SerializedName("overview")
 	val overview: String,
@@ -49,9 +38,8 @@ data class MovieResultsItem(
 	val video: Boolean,
 
 	@field:SerializedName("title")
-	var title: String="",
+	val title: String,
 
-	@TypeConverters(DataConverter::class)
 	@field:SerializedName("genre_ids")
 	val genreIds: List<Int>,
 
@@ -59,16 +47,19 @@ data class MovieResultsItem(
 	val posterPath: String,
 
 	@field:SerializedName("backdrop_path")
-	val backdropPath: String?="",
+	val backdropPath: String,
+
+	@field:SerializedName("media_type")
+	val mediaType: String,
 
 	@field:SerializedName("release_date")
 	val releaseDate: String,
 
 	@field:SerializedName("popularity")
-	val popularity: Double,
+	val popularity: Any,
 
 	@field:SerializedName("vote_average")
-	val voteAverage: Double,
+	val voteAverage: Any,
 
 	@field:SerializedName("id")
 	val id: Int,
@@ -79,3 +70,4 @@ data class MovieResultsItem(
 	@field:SerializedName("vote_count")
 	val voteCount: Int
 )
+

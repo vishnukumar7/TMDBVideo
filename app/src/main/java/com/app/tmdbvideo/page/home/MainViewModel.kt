@@ -3,6 +3,7 @@ package com.app.tmdbvideo.page.home
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,7 +28,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MainViewModel(private val application: Application) : ViewModel() {
+class MainViewModel(private val application: Application) : AndroidViewModel(application) {
 
     private val tvRepository: TvRepository
 val TAG="MainViewModel"
@@ -295,13 +296,3 @@ val TAG="MainViewModel"
     }
 }
 
-class ViewModelClassFactory(private var application: Application) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            return MainViewModel(application) as T
-        }else if(modelClass.isAssignableFrom(DetailViewModel::class.java)){
-            return DetailViewModel(application) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel Class")
-    }
-}

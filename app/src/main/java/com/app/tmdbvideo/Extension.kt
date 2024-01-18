@@ -15,6 +15,8 @@ object Extension {
 
     fun String.toImdbProfileUrl() = "https://www.imdb.com/name/$this"
 
+    fun String?.optString(replaceText : String="") = this ?: replaceText
+
     fun  SnapshotStateList<HomePageModel>.addValue(index: Int, homePageModel: HomePageModel) {
         if(this.isEmpty()){
             this.add(homePageModel)

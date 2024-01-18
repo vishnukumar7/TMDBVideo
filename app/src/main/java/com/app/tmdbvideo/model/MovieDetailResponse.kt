@@ -62,10 +62,10 @@ data class MovieDetailResponse(
 	val releaseDate: String,
 
 	@field:SerializedName("vote_average")
-	val voteAverage: Any,
+	val voteAverage: Double,
 
 	@field:SerializedName("belongs_to_collection")
-	val belongsToCollection: Any,
+	var belongsToCollection: BelongToCollection?=null,
 
 	@field:SerializedName("tagline")
 	val tagline: String,
@@ -123,4 +123,20 @@ data class SpokenLanguagesMovieItem(
 
 	@field:SerializedName("english_name")
 	val englishName: String
+)
+
+
+data class BelongToCollection(
+
+	@field:SerializedName("backdrop_path")
+	val backdropPath: String,
+
+	@field:SerializedName("name")
+	val name: String,
+
+	@field:SerializedName("id")
+	val id: Int,
+
+	@field:SerializedName("poster_path")
+	val posterPath: String
 )

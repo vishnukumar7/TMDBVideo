@@ -1,10 +1,12 @@
 package com.app.tmdbvideo
 
 sealed class Routes(val routes : String){
-    object DetailMovieViewScreen : Routes("DetailMovie")
-    object DetailTvViewScreen : Routes("DetailTv")
-    object HomeViewScreen : Routes("Home")
-    object SearchFilterOption : Routes("search")
-    object ViewAllTVScreen : Routes("ViewAllTv")
-    object ViewAllMovieScreen : Routes("ViewAllMovie")
+    data object DetailMovieViewScreen : Routes("DetailMovie")
+    data object DetailTvViewScreen : Routes("DetailTv")
+    data object HomeViewScreen : Routes("Home")
+    data object SearchFilterOption : Routes("search")
+    data object ViewAllTVScreen : Routes("ViewAllTv")
+    data object ViewAllMovieScreen : Routes("ViewAllMovie")
+
+
 }
