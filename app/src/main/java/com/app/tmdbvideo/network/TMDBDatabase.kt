@@ -7,12 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.app.tmdbvideo.model.DataConverter
 import com.app.tmdbvideo.model.MovieResponse
-import com.app.tmdbvideo.model.MovieResultsItem
-import com.app.tmdbvideo.model.TrendingTvResponse
+import com.app.tmdbvideo.model.TvResponse
 
 
-
-@Database(entities = [TrendingTvResponse::class,MovieResponse::class], version = 1, exportSchema = false)
+@Database(entities = [TvResponse::class,MovieResponse::class], version = 1, exportSchema = false)
 @TypeConverters(DataConverter::class)
 abstract class TMDBDatabase : RoomDatabase() {
 

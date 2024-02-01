@@ -202,16 +202,6 @@ data class ProductionCompaniesItem(
 	@field:SerializedName("origin_country")
 	val originCountry: String
 )
-
-data class GenresItem(
-
-	@field:SerializedName("name")
-	val name: String,
-
-	@field:SerializedName("id")
-	val id: Int
-)
-
 data class ProductionCountriesItem(
 
 	@field:SerializedName("iso_3166_1")

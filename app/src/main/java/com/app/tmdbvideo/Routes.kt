@@ -7,6 +7,8 @@ sealed class Routes(val routes : String){
     data object SearchFilterOption : Routes("search")
     data object ViewAllTVScreen : Routes("ViewAllTv")
     data object ViewAllMovieScreen : Routes("ViewAllMovie")
+    data object MovieListScreen : Routes("MoviesList")
+    data object TvSeriesListScreen : Routes("TvSeriesList")
 
 
 }

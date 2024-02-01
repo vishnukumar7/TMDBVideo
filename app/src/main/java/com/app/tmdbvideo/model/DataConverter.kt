@@ -7,39 +7,21 @@ import com.google.gson.reflect.TypeToken
 class DataConverter {
 
     @TypeConverter
-    fun fromTvResultTableList(resultList : List<TvResultsItem>?	): String? {
+    fun fromResultTableList(resultList : List<ResultItem>?	): String? {
         if(resultList==null)
             return null
         val gson = Gson()
-        val type = object : TypeToken<List<TvResultsItem>>(){}.type
+        val type = object : TypeToken<List<ResultItem>>(){}.type
         return gson.toJson(resultList,type)
     }
 
     @TypeConverter
-    fun toTvResultTableList(tvResultTableString : String?) : List<TvResultsItem>{
-        if(tvResultTableString==null)
+    fun toResultTableList(resultTableString : String?) : List<ResultItem>{
+        if(resultTableString==null)
             return ArrayList()
         val gson = Gson()
-        val type = object : TypeToken<List<TvResultsItem>>(){}.type
-        return gson.fromJson(tvResultTableString,type)
-    }
-
-    @TypeConverter
-    fun fromMovieResultTableList(resultList : List<MovieResultsItem>?	): String? {
-        if(resultList==null)
-            return null
-        val gson = Gson()
-        val type = object : TypeToken<List<MovieResultsItem>>(){}.type
-        return gson.toJson(resultList,type)
-    }
-
-    @TypeConverter
-    fun toMovieResultTableList(tvResultTableString : String?) : List<MovieResultsItem>{
-        if(tvResultTableString==null)
-            return ArrayList()
-        val gson = Gson()
-        val type = object : TypeToken<List<MovieResultsItem>>(){}.type
-        return gson.fromJson(tvResultTableString,type)
+        val type = object : TypeToken<List<ResultItem>>(){}.type
+        return gson.fromJson(resultTableString,type)
     }
 
     @TypeConverter

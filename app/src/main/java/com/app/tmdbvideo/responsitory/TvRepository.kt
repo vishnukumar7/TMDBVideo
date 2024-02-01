@@ -3,7 +3,7 @@ package com.app.tmdbvideo.responsitory
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.app.tmdbvideo.model.MovieResponse
-import com.app.tmdbvideo.model.TrendingTvResponse
+import com.app.tmdbvideo.model.TvResponse
 import com.app.tmdbvideo.network.MoviesDao
 import com.app.tmdbvideo.network.TMDBDatabase
 import com.app.tmdbvideo.network.TvSeriesDao
@@ -20,18 +20,18 @@ class TvRepository(tmdb: TMDBDatabase) {
 
     private val moviesDao : MoviesDao = tmdb.movieDao()
 
-    val allTvData : LiveData<List<TrendingTvResponse>> = tvSeriesDao.getAllTvList()
+    val allTvData : LiveData<List<TvResponse>> = tvSeriesDao.getAllTvList()
 
     val allMovieData : LiveData<List<MovieResponse>> = moviesDao.getAllMovieList()
 
-    var searchOneTvResult = MutableLiveData<List<TrendingTvResponse>>()
+    var searchOneTvResult = MutableLiveData<List<TvResponse>>()
     var searchOneMovieResult = MutableLiveData<List<MovieResponse>>()
 
 
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
-    fun insertTv(newResponse: TrendingTvResponse){
+    fun insertTv(newResponse: TvResponse){
         coroutineScope.launch {
             val oldResponse = tvSeriesDao.findPageType(newResponse.page,newResponse.type)
             if (oldResponse.isEmpty()){
@@ -77,7 +77,7 @@ class TvRepository(tmdb: TMDBDatabase) {
         }
     }
 
-    private fun asyncFindTvSeries(page: Int,type : String) : Deferred<List<TrendingTvResponse>> = coroutineScope.async(Dispatchers.IO) {
+    private fun asyncFindTvSeries(page: Int,type : String) : Deferred<List<TvResponse>> = coroutineScope.async(Dispatchers.IO) {
         if(type.isEmpty())
             return@async tvSeriesDao.findPage(page = page)
         else return@async tvSeriesDao.findPageType(page = page, type = type)

@@ -1,13 +1,12 @@
 package com.app.tmdbvideo.page
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.app.tmdbvideo.model.MovieResponse
-import com.app.tmdbvideo.model.MovieResultsItem
+import com.app.tmdbvideo.model.ResultItem
 import com.app.tmdbvideo.network.ApiInterface
 import com.app.tmdbvideo.network.RetrofitClient
 import com.app.tmdbvideo.util.LogcatUtils
@@ -23,9 +22,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     private val _searchQueryResult = MutableLiveData<String>()
     val searchQueryResult : LiveData<String> = _searchQueryResult
 
-    private val _searchResultList = MutableLiveData<List<MovieResultsItem>>()
+    private val _searchResultList = MutableLiveData<List<ResultItem>>()
 
-    val searchResultList : LiveData<List<MovieResultsItem>> = _searchResultList
+    val searchResultList : LiveData<List<ResultItem>> = _searchResultList
 
     fun searchQueryChange(newQuery : String) {
         _searchQueryResult.value=newQuery

@@ -41,5 +41,5 @@ data class ResultsItem(
 	val adult: Boolean,
 
 	@field:SerializedName("poster_path")
-	val posterPath: Any
+	val posterPath: String = ""
 )

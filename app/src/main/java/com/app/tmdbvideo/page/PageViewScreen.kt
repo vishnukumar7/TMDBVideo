@@ -2,7 +2,6 @@ package com.app.tmdbvideo.page
 
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -35,11 +34,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarColors
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -57,7 +54,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,7 +64,6 @@ import coil.compose.AsyncImage
 import com.app.tmdbvideo.Extension.optString
 import com.app.tmdbvideo.Extension.toBackdropUrl
 import com.app.tmdbvideo.Extension.toOriginalUrl
-import com.app.tmdbvideo.Extension.toProfilePhotoUrl
 import com.app.tmdbvideo.R
 import com.app.tmdbvideo.Routes
 import com.app.tmdbvideo.model.CollectionResponse
@@ -78,7 +73,6 @@ import com.app.tmdbvideo.page.detail.DetailViewModel
 import com.app.tmdbvideo.page.home.MainViewModel
 import com.app.tmdbvideo.page.home.ViewAsyncImage
 import com.app.tmdbvideo.util.AppConstant
-import com.app.tmdbvideo.util.ColorsTransFormation
 import com.google.accompanist.pager.ExperimentalPagerApi
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -264,7 +258,7 @@ fun ViewAllTv(mainViewModel: MainViewModel, type: String, navController: NavHost
                     Column {
                         ViewAsyncImage(
                             model = tvList[it].posterPath.toBackdropUrl(),
-                            contentDescription = tvList[it].name,
+                            contentDescription = tvList[it].nameTv,
                             modifier = Modifier
                                 .width(size.dp)
                                 .height((size + 100).dp)
@@ -327,7 +321,7 @@ fun ViewAllMovie(mainViewModel: MainViewModel, type: String, navController: NavH
                     Column {
                         AsyncImage(
                             model = tvList[it].posterPath.toBackdropUrl(),
-                            contentDescription = tvList[it].name,
+                            contentDescription = tvList[it].nameTv,
                             placeholder = painterResource(id = R.drawable.placeholder_image),
                             error = painterResource(id = R.drawable.error_image),
                             contentScale = ContentScale.FillBounds
@@ -421,16 +415,16 @@ fun SearchScreenPage(activity: ComponentActivity, navController: NavHostControll
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     ViewAsyncImage(
                                         model = item.backdropPath.optString().toBackdropUrl(),
-                                        contentDescription = item.title,
+                                        contentDescription = item.titleMovie,
                                         modifier = Modifier
                                             .height(75.dp)
                                             .width(75.dp)
                                     )
                                     Spacer(modifier = Modifier.width(20.dp))
                                     TextField(
-                                        value = item.title,
-                                        onValueChange = { item.title = it },
-                                        visualTransformation = ColorsTransFormation(queryResult),
+                                        value = item.titleMovie,
+                                        onValueChange = { item.titleMovie = it },
+                                       /* visualTransformation = ColorsTransFormation(queryResult),*/
                                         colors = TextFieldDefaults.colors(
                                             focusedContainerColor = Color.Black,
                                             unfocusedContainerColor = Color.Black,
