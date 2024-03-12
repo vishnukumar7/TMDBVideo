@@ -13,7 +13,6 @@ import com.app.tmdbvideo.Extension.addValue
 import com.app.tmdbvideo.model.HomePageModel
 import com.app.tmdbvideo.model.MovieResponse
 import com.app.tmdbvideo.model.ResultItem
-import com.app.tmdbvideo.model.ResultsItem
 import com.app.tmdbvideo.model.TvResponse
 import com.app.tmdbvideo.network.ApiInterface
 import com.app.tmdbvideo.network.RetrofitClient
@@ -26,7 +25,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MainViewModel(private val application: Application) : AndroidViewModel(application) {
+class HomeViewModel(private val application: Application) : AndroidViewModel(application) {
 
     private val tvRepository: TvRepository
 val TAG="MainViewModel"
@@ -57,6 +56,7 @@ val TAG="MainViewModel"
     private val _refreshState = MutableLiveData<Boolean>()
     val refreshState: LiveData<Boolean> = _refreshState
 
+    var defaultTypeList = "Home"
 
     var currentPage = 1
     var apiPage =1
@@ -68,7 +68,12 @@ val TAG="MainViewModel"
 
     fun getHomeData(typeList : String="Home") {
         if(AppConstant.networkCheck(application)){
-            getPopularTvList()
+            if(typeList.equals("Home",true)){
+                getPopularTvList(typeList = typeList)
+            }else if(typeList.equals("Tv",true)){
+                getAiringTodayTvList(typeList = typeList)
+            }
+
         }else{
             homePageModelList.clear()
 
@@ -115,8 +120,7 @@ val TAG="MainViewModel"
                         responseData.type = AppConstant.ON_THE_AIR_TV
                         tvRepository.insertTv(responseData)
                         if(search.isEmpty()){
-                            homePageModelList.clear()
-                            homePageModelList.add(HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV, responseData.results))
+                            homePageModelList.add(HomePageModel(AppConstant.HEADER_ON_THE_AIR_TV, responseData.results))
                             _homeList.value = homePageModelList
                             getTopRatedTvList()
                         }else{
@@ -150,7 +154,7 @@ val TAG="MainViewModel"
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
 
-            val call = apiService.getPopularTv(page = page.toString())
+            val call = apiService.getAiringTodayTv(page = page.toString())
             call.enqueue(object : Callback<TvResponse> {
                 override fun onResponse(
                     call: Call<TvResponse>,
@@ -160,13 +164,13 @@ val TAG="MainViewModel"
                     if (response.isSuccessful && response.body() != null) {
                         tvRepository.deleteAll()
                         val responseData = response.body()!!.addMediaType()
-                        responseData.type = AppConstant.POPULAR_TV
+                        responseData.type = AppConstant.AIRING_TODAY_TV
                         tvRepository.insertTv(responseData)
                         if(search.isEmpty()){
                             homePageModelList.clear()
-                            homePageModelList.add(HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV, responseData.results))
+                            homePageModelList.add(HomePageModel(AppConstant.HEADER_AIRING_TODAY_TV, responseData.results))
                             _homeList.value = homePageModelList
-                            getTopRatedTvList()
+                            getPopularTvList(typeList = typeList)
                         }else{
                             currentPage=responseData.page
                             if(page==1) {
@@ -198,7 +202,7 @@ val TAG="MainViewModel"
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
 
-            val call = apiService.getPopularTv(page = page.toString())
+            val call = apiService.getTrendingTvByDay()
             call.enqueue(object : Callback<TvResponse> {
                 override fun onResponse(
                     call: Call<TvResponse>,
@@ -208,13 +212,12 @@ val TAG="MainViewModel"
                     if (response.isSuccessful && response.body() != null) {
                         tvRepository.deleteAll()
                         val responseData = response.body()!!.addMediaType()
-                        responseData.type = AppConstant.POPULAR_TV
+                        responseData.type = AppConstant.TRENDING_BY_DAY_TV
                         tvRepository.insertTv(responseData)
                         if(search.isEmpty()){
-                            homePageModelList.clear()
-                            homePageModelList.add(HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV, responseData.results))
+                            homePageModelList.add(HomePageModel(AppConstant.HEADER_TRENDING_BY_DAY_TV, responseData.results))
                             _homeList.value = homePageModelList
-                            getTopRatedTvList()
+                            getTrendingTvByWeekList(typeList = typeList)
                         }else{
                             currentPage=responseData.page
                             if(page==1) {
@@ -246,7 +249,7 @@ val TAG="MainViewModel"
         viewModelScope.launch {
             val apiService = RetrofitClient.buildService(ApiInterface::class.java)
 
-            val call = apiService.getPopularTv(page = page.toString())
+            val call = apiService.getTrendingTvByWeek()
             call.enqueue(object : Callback<TvResponse> {
                 override fun onResponse(
                     call: Call<TvResponse>,
@@ -256,13 +259,11 @@ val TAG="MainViewModel"
                     if (response.isSuccessful && response.body() != null) {
                         tvRepository.deleteAll()
                         val responseData = response.body()!!.addMediaType()
-                        responseData.type = AppConstant.POPULAR_TV
+                        responseData.type = AppConstant.TRENDING_BY_WEEK_TV
                         tvRepository.insertTv(responseData)
                         if(search.isEmpty()){
-                            homePageModelList.clear()
-                            homePageModelList.add(HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV, responseData.results))
+                            homePageModelList.add(HomePageModel(AppConstant.HEADER_TRENDING_BY_WEEK_TV, responseData.results))
                             _homeList.value = homePageModelList
-                            getTopRatedTvList()
                         }else{
                             currentPage=responseData.page
                             if(page==1) {
@@ -307,12 +308,17 @@ val TAG="MainViewModel"
                         if(search.isEmpty()){
                             homePageModelList.add(
                                 HomePageModel(
-                                    AppConstant.TOP_RATED_TV,
+                                    AppConstant.HOME_HEADER_TOP_RATED_TV,
                                     responseData.results
                                 )
                             )
                             _homeList.value = homePageModelList
-                            getPopularMovieList()
+                            if(typeList.equals("tv",true)){
+                                getTrendingTvByDayList(typeList = typeList)
+                            }
+                            else {
+                                getPopularMovieList()
+                            }
                         }else{
                             currentPage=responseData.page
                             if(page==1) {
@@ -358,10 +364,12 @@ val TAG="MainViewModel"
                         responseData.type = AppConstant.POPULAR_TV
                         tvRepository.insertTv(responseData)
                         if(search.isEmpty()){
-                            homePageModelList.clear()
+                            if(!typeList.equals("Tv",true)) {
+                                homePageModelList.clear()
+                            }
                             homePageModelList.add(HomePageModel(AppConstant.HOME_HEADER_POPULAR_TV, responseData.results))
                             _homeList.value = homePageModelList
-                            getTopRatedTvList()
+                            getTopRatedTvList(typeList = typeList)
                         }else{
                             currentPage=responseData.page
                             if(page==1) {

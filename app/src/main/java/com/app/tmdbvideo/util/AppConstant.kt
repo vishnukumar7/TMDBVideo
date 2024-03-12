@@ -50,6 +50,7 @@ object AppConstant  {
     const val HEADER_UP_COMING_MOVIE="Up Coming"
     const val HEADER_TRENDING_BY_DAY_MOVIE="Trending By Day"
     const val HEADER_TRENDING_BY_WEEK_MOVIE="Trending By Week"
+    const val HEADER_HOME="Home"
 
     const val TAG_VIEW_ALL="view_all"
 

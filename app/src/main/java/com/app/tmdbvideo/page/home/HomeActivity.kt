@@ -8,24 +8,36 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.AppBarDefaults
+import androidx.compose.material.BottomAppBar
 import androidx.compose.material.FabPosition
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
+import androidx.compose.material.contentColorFor
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.sharp.ArrowBack
+import androidx.compose.material.primarySurface
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +52,10 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
@@ -48,6 +64,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -62,25 +79,28 @@ import com.app.tmdbvideo.R
 import com.app.tmdbvideo.Routes
 import com.app.tmdbvideo.model.FabItem
 import com.app.tmdbvideo.model.ResultItem
-import com.app.tmdbvideo.page.DetailMovieScreenPage
-import com.app.tmdbvideo.page.DetailTvScreenPage
 import com.app.tmdbvideo.page.FloatActionButtonWithSubItem
 import com.app.tmdbvideo.page.SearchScreenPage
 import com.app.tmdbvideo.page.ViewAllMovie
 import com.app.tmdbvideo.page.ViewAllTv
 import com.app.tmdbvideo.page.ViewModelClassFactory
+import com.app.tmdbvideo.page.detail.DetailMovieScreenPage
+import com.app.tmdbvideo.page.detail.DetailTvScreenPage
 import com.app.tmdbvideo.ui.theme.TMDBVideoTheme
 import com.app.tmdbvideo.ui.theme.topBarColor
 import com.app.tmdbvideo.util.AppConstant
+import com.app.tmdbvideo.util.AppConstant.HEADER_HOME
+import com.app.tmdbvideo.util.Home
+import com.app.tmdbvideo.util.MyBottomAppBar
 
-class MainActivity : ComponentActivity() {
-    private lateinit var mainViewModel: MainViewModel
+class HomeActivity : ComponentActivity() {
+    private lateinit var homeViewModel: HomeViewModel
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val modelFactory = ViewModelClassFactory(application)
-        mainViewModel = ViewModelProvider(this, modelFactory)[MainViewModel::class.java]
+        homeViewModel = ViewModelProvider(this, modelFactory)[HomeViewModel::class.java]
         setContent {
             TMDBVideoTheme {
                 // A surface container using the 'background' color from the theme
@@ -88,7 +108,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.Black
                 ) {
-                    ScreenHome(mainViewModel = mainViewModel, this)
+                    ScreenHome(homeViewModel = homeViewModel, this)
                 }
             }
         }
@@ -97,22 +117,22 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ScreenHome(
-    mainViewModel: MainViewModel,
+    homeViewModel: HomeViewModel,
     activity: ComponentActivity,
     startPosition: String = Routes.HomeViewScreen.routes
 ) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = startPosition) {
         composable(Routes.HomeViewScreen.routes) {
-            HomePageView(mainViewModel = mainViewModel, activity, navController)
+            HomePageView(homeViewModel = homeViewModel, activity, navController)
         }
 
         composable(Routes.MovieListScreen.routes) {
-
+            HomePageView(homeViewModel = homeViewModel, activity, navController)
         }
 
         composable(Routes.TvSeriesListScreen.routes) {
-
+            HomePageView(homeViewModel = homeViewModel, activity, navController)
         }
 
         composable("${Routes.DetailMovieViewScreen.routes}/{movieId}") {
@@ -133,7 +153,7 @@ fun ScreenHome(
             val typeCategories = it.arguments?.getString("type")
             typeCategories?.let {
                 ViewAllTv(
-                    mainViewModel = mainViewModel,
+                    homeViewModel = homeViewModel,
                     type = typeCategories,
                     navController = navController
                 )
@@ -144,7 +164,7 @@ fun ScreenHome(
             val typeCategories = it.arguments?.getString("type")
             typeCategories?.let {
                 ViewAllMovie(
-                    mainViewModel = mainViewModel,
+                    homeViewModel = homeViewModel,
                     type = typeCategories,
                     navController = navController
                 )
@@ -155,6 +175,33 @@ fun ScreenHome(
             SearchScreenPage(activity, navController)
         }
 
+        composable(Routes.ComingSoonScreen.routes){
+            ComingSoonPage(activity,navController)
+        }
+
+
+    }
+}
+
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+fun ComingSoonPage(activity: ComponentActivity, navController: NavHostController) {
+    Scaffold(
+        scaffoldState = rememberScaffoldState(),
+        /*floatingActionButton = {
+            FloatingActionBarCompose {
+                homeViewModel.defaultTypeList = it
+                homeViewModel.getHomeData(it)
+            }
+        },*/
+        bottomBar = {
+            BottomBarCompose(navController)
+        },
+        //  isFloatingActionButtonDocked = true,
+        backgroundColor = Color.Black,
+        // floatingActionButtonPosition = FabPosition.End,
+        topBar = { TopBarCompose(HEADER_HOME, navController) }
+    ) {
 
     }
 }
@@ -162,17 +209,17 @@ fun ScreenHome(
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomePageView(
-    mainViewModel: MainViewModel,
+    homeViewModel: HomeViewModel,
     activity: ComponentActivity,
-    navController: NavHostController
+    navController: NavHostController,
 ) {
     val lifeCycleOwner = LocalLifecycleOwner.current
     val lifeCycleState by lifeCycleOwner.lifecycle.currentStateFlow.collectAsState()
-    val homeList by mainViewModel.homeList.observeAsState(emptyList())
+    val homeList by homeViewModel.homeList.observeAsState(emptyList())
     LaunchedEffect(Unit) {
         when (lifeCycleState) {
             Lifecycle.State.RESUMED -> {
-                mainViewModel.getHomeData()
+                homeViewModel.getHomeData(homeViewModel.defaultTypeList)
             }
 
             else -> {
@@ -183,9 +230,19 @@ fun HomePageView(
 
     Scaffold(
         scaffoldState = rememberScaffoldState(),
-        floatingActionButton = { FloatingActionBarCompose(navController) },
-        isFloatingActionButtonDocked = true, backgroundColor = Color.Black,
-        floatingActionButtonPosition = FabPosition.End, topBar = { TopBarCompose(navController) }
+        /*floatingActionButton = {
+            FloatingActionBarCompose {
+                homeViewModel.defaultTypeList = it
+                homeViewModel.getHomeData(it)
+            }
+        },*/
+        bottomBar = {
+            BottomBarCompose(navController)
+        },
+      //  isFloatingActionButtonDocked = true,
+        backgroundColor = Color.Black,
+       // floatingActionButtonPosition = FabPosition.End,
+        topBar = { TopBarCompose(HEADER_HOME, navController) }
     ) {
         if (homeList.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -251,39 +308,99 @@ fun HomePageView(
 }
 
 @Composable
-fun FloatingActionBarCompose(navController: NavHostController) {
-    /*FloatingActionButton(
-        onClick = { },
-        containerColor = MaterialTheme.colors.secondary,
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.filter),
-            contentDescription = "filter",
-            tint = Color.White, modifier = Modifier.size(16.dp)
-        )
-    }*/
+fun FloatingActionBarCompose(onFabItemClicked: (String) -> Unit) {
     FloatActionButtonWithSubItem(
         fabIcon = painterResource(id = R.drawable.filter), items = arrayListOf(
             FabItem(painterResource(id = R.drawable.movies), label = "Movies", onFabItemClicked = {
-
+                onFabItemClicked.invoke("Movie")
             }),
             FabItem(painterResource(id = R.drawable.series), label = "Tv", onFabItemClicked = {
-
+                onFabItemClicked.invoke("Tv")
             })
         ), showLabels = true
     )
 }
 
 @Composable
-fun TopBarCompose(navController: NavHostController) {
-    TopAppBar(elevation = 4.dp, title = { Text(text = "Home", color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)}, backgroundColor = topBarColor, actions = {
-        IconButton(onClick = {
-            navController.navigate(Routes.SearchFilterOption.routes)
-        }) {
-            Icon(Icons.Filled.Search, null, tint = Color.White)
+fun TopBarCompose(title: String, navController: NavHostController? = null) {
+    TopAppBar(
+        title = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                if (title != "Home") {
+                    IconButton(onClick = { navController?.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Sharp.ArrowBack,
+                            contentDescription = "back",
+                            tint = Color.White, modifier = Modifier.fillMaxHeight()
+                        )
+                    }
+                    Spacer(modifier = Modifier.width((-10).dp))
+                }
+                Box(
+                    contentAlignment = Alignment.Center, modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = title,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+            }
+        },
+        backgroundColor = topBarColor,
+        actions = {
+            if (title == "Home") {
+                IconButton(onClick = {
+                    navController?.navigate(Routes.SearchFilterOption.routes)
+                }) {
+                    Icon(Icons.Filled.Search, null, tint = Color.White)
+                }
+            }
+        })
+}
+
+@Composable
+fun BottomBarCompose(navController: NavHostController) {
+    MyBottomAppBar(cutoutShape = RectangleShape, backgroundColor = Color.Black) {
+        NavigationItem(
+            navController = navController,
+            routesString = Routes.HomeViewScreen.routes,
+            label = "Home",
+            icon = Home
+        )
+        NavigationItem(
+            navController = navController,
+            routesString = Routes.ComingSoonScreen.routes,
+            label = "Home", painterIcon = painterResource(id = R.drawable.coming_soon)
+        )
+    }
+}
+
+@Composable
+fun NavigationItem(
+    navController: NavHostController,
+    routesString: String,
+    label: String,
+    icon: ImageVector? = null,
+    painterIcon: Painter? = null
+) {
+    IconButton(onClick = { navController.navigate(routesString) }) {
+        Column(verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            if (icon != null)
+                Icon(imageVector = icon, contentDescription = label, tint = Color.White)
+            else if (painterIcon != null)
+                Icon(painter = painterIcon, contentDescription = label, tint = Color.White)
+            Text(text = label, color = Color.White, fontSize = 16.sp)
         }
-    })
+    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

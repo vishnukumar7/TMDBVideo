@@ -9,6 +9,7 @@ sealed class Routes(val routes : String){
     data object ViewAllMovieScreen : Routes("ViewAllMovie")
     data object MovieListScreen : Routes("MoviesList")
     data object TvSeriesListScreen : Routes("TvSeriesList")
+    data object ComingSoonScreen : Routes("ComingSoon")
 
 
 }

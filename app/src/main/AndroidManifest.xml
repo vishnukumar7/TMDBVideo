@@ -19,7 +19,7 @@
             android:name=".page.detail.DetailActivity"
             android:exported="false" />
         <activity
-            android:name=".page.home.MainActivity"
+            android:name=".page.home.HomeActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.TMDBVideo">
